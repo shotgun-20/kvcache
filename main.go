@@ -20,6 +20,13 @@ func getValue(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, resp)
 }
 
+func setValue(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+	resp := fmt.Sprintf("Set ID: %s\n", id)
+	fmt.Fprint(w, resp)
+}
+
 func delValue(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
@@ -40,6 +47,8 @@ func main() {
 	router := mux.NewRouter()
 	routing := []Route{
 		{"/storage/{id}", []string{"GET"}, getValue},
+		{"/storage/{id}", []string{"PUT", "POST"}, setValue},
+		{"/storage/{id}", []string{"DELETE"}, delValue},
 	}
 	initRouter(router, routing)
 	http.Handle("/", router)
