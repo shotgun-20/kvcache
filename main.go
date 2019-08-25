@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"gitlab.tq-nest.lan/lancet/kvcache/vault"
 )
 
 type Route struct {
@@ -45,6 +46,8 @@ func initRouter(router *mux.Router, routes []Route) {
 
 func main() {
 	router := mux.NewRouter()
+	storage := new(vault.Store)
+	storage.Init(30)
 	routing := []Route{
 		{"/storage/{id}", []string{"GET"}, getValue},
 		{"/storage/{id}", []string{"PUT", "POST"}, setValue},

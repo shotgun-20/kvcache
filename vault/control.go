@@ -2,12 +2,11 @@ package vault
 
 import (
 	"errors"
-	"fmt"
 	"time"
 )
 
 // Init - инициализация хранилища
-func (store *store) Init(ttl uint64) error {
+func (store *Store) Init(ttl uint64) error {
 	if store.ttl != 0 {
 		return errors.New("Already up")
 	}
@@ -28,30 +27,30 @@ func (store *store) Init(ttl uint64) error {
 	return nil
 }
 
-func (store *store) cleaner() {
+func (store *Store) cleaner() {
 	reply := make(chan Message)
-	msg := Message{Action: "POP", Reply: reply}
 	for {
+		msg := Message{Action: "POP", Reply: reply}
 		store.Exchange <- msg
 		got := <-reply
 		if got.Error == true {
-			fmt.Print("Cleaner sleeps.\n")
+			//fmt.Print("Cleaner sleeps.\n")
 			time.Sleep(1 * time.Second)
 		}
 	}
 }
 
 // control - управление хранилищем
-func (store *store) control() {
+func (store *Store) control() {
 	tick := time.Tick(time.Second) // Каждую секунду ставим в очередь разделитель "вёдер"
 	for {
 		select {
 		case <-tick:
-			fmt.Print("Got time tick\n")
+			//fmt.Print("Got time tick\n")
 			store.addNode("", "", false)
 		case request := <-store.Exchange:
-			fmt.Print("Got request", request, "\n")
-			reply := new(Message)
+			//fmt.Print("Got request: ", request.Action, "\n")
+			reply := Message{}
 			switch request.Action {
 			case "POP": // внутренний метод, часть механизма устаревания. Недоступен клиентам.
 				err := store.popNode()
@@ -79,6 +78,7 @@ func (store *store) control() {
 					reply.Error = true
 				}
 			}
+			request.Reply <- reply
 		}
 	}
 }

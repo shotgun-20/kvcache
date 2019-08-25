@@ -20,7 +20,7 @@ type node struct {
 }
 
 // Store - корневая структура для хранения данных
-type store struct {
+type Store struct {
 	Exchange chan Message     // Небуферизованный канал для синхронизации доступа
 	ttl      uint64           // Время жизни узла, сек
 	head     *node            // Голова, выходит первым

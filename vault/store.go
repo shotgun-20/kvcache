@@ -3,10 +3,15 @@ package vault
 import "errors"
 
 // addNode - добавляем новый узел в хвост очереди.
-func (store *store) addNode(key, value string, kind bool) {
-	prev := store.tail
+func (store *Store) addNode(key, value string, kind bool) {
+	var prev *node
+	if store.tail != nil {
+		prev = store.tail
+	}
 	store.tail = &node{Key: key, Value: value, Prev: prev, Kind: kind}
-	prev.Next = store.tail
+	if prev != nil {
+		prev.Next = store.tail
+	}
 	if kind == true {
 		store.flat[key] = store.tail
 	}
@@ -15,7 +20,7 @@ func (store *store) addNode(key, value string, kind bool) {
 // setNode - собираемся добавить новый узел.
 // Если ключа ещё нет - просто добавляем в хвост.
 // Если ключ есть - переносим в хвост.
-func (store *store) setNode(key, value string) error {
+func (store *Store) setNode(key, value string) error {
 	if _, ok := store.flat[key]; ok == false {
 		store.addNode(key, value, true)
 		return nil
@@ -46,7 +51,7 @@ func (store *store) setNode(key, value string) error {
 // popNode - извлекаем узел из гловы очереди и уничтожаем его.
 // Если Kind == 0 - то возвращаем ошибку.
 // При ошибке устаревание приостанавливается на секунду.
-func (store *store) popNode() error {
+func (store *Store) popNode() error {
 	if store.head == nil {
 		return errors.New("No nodes")
 	}
@@ -60,7 +65,7 @@ func (store *store) popNode() error {
 }
 
 // getNode - получить значение ключа, или ошибку, если такого нет.
-func (store *store) getNode(key string) (string, error) {
+func (store *Store) getNode(key string) (string, error) {
 	if v, ok := store.flat[key]; ok != false {
 		return v.Value, nil
 	}
@@ -69,7 +74,7 @@ func (store *store) getNode(key string) (string, error) {
 
 // delNode - удалить узел с указанным ключом.
 // Если такого ключа не было - вернуть ошибку.
-func (store *store) delNode(key string) error {
+func (store *Store) delNode(key string) error {
 	if _, ok := store.flat[key]; ok == false {
 		return errors.New("No such key")
 	}
