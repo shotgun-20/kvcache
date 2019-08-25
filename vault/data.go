@@ -9,6 +9,7 @@ type Message struct {
 	Value  string
 	Action string
 	Error  bool
+	Reply  chan Message
 }
 
 // node - узел данных для очереди устаревания
@@ -22,9 +23,9 @@ type node struct {
 
 // Store - корневая структура для хранения данных
 type store struct {
-	exchange chan Message  // Небуферизованный канал для синхронизации доступа
-	ttl      time.Duration // Время жизни узла
-	head     *node
-	tail     *node
+	exchange chan Message     // Небуферизованный канал для синхронизации доступа
+	ttl      time.Duration    // Время жизни узла
+	head     *node            // Голова, выходит первым
+	tail     *node            // Добавлен последним
 	flat     map[string]*node // Карта для быстрого доступа к значениям
 }
