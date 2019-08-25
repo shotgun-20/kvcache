@@ -1,13 +1,11 @@
 package vault
 
-import "time"
-
 // Message - структура данных для двустороннего обмена с хранилищем,
 // запрос/ответ
 type Message struct {
 	Key    string
 	Value  string
-	Action string
+	Action string // SET, GET, DEL, POP
 	Error  bool
 	Reply  chan Message
 }
@@ -23,8 +21,8 @@ type node struct {
 
 // Store - корневая структура для хранения данных
 type store struct {
-	exchange chan Message     // Небуферизованный канал для синхронизации доступа
-	ttl      time.Duration    // Время жизни узла
+	Exchange chan Message     // Небуферизованный канал для синхронизации доступа
+	ttl      uint64           // Время жизни узла, сек
 	head     *node            // Голова, выходит первым
 	tail     *node            // Добавлен последним
 	flat     map[string]*node // Карта для быстрого доступа к значениям

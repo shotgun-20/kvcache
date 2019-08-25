@@ -5,9 +5,11 @@ import "errors"
 // addNode - добавляем новый узел в хвост очереди.
 func (store *store) addNode(key, value string, kind bool) {
 	prev := store.tail
-	store.tail = &node{Key: key, Value: value, Prev: prev, Kind: true}
+	store.tail = &node{Key: key, Value: value, Prev: prev, Kind: kind}
 	prev.Next = store.tail
-	store.flat[key] = store.tail
+	if kind == true {
+		store.flat[key] = store.tail
+	}
 }
 
 // setNode - собираемся добавить новый узел.
