@@ -3,7 +3,7 @@ package vault
 import "errors"
 
 // addNode - добавляем новый узел в хвост очереди.
-func (store *store) addNode(key, value string) {
+func (store *store) addNode(key, value string, kind bool) {
 	prev := store.tail
 	store.tail = &node{Key: key, Value: value, Prev: prev, Kind: true}
 	prev.Next = store.tail
@@ -15,7 +15,7 @@ func (store *store) addNode(key, value string) {
 // Если ключ есть - переносим в хвост.
 func (store *store) setNode(key, value string) error {
 	if _, ok := store.flat[key]; ok == false {
-		store.addNode(key, value)
+		store.addNode(key, value, true)
 		return nil
 	}
 	// Вместо того, чтобы удалить и пересоздать, просто правим ссылки.
@@ -37,7 +37,7 @@ func (store *store) setNode(key, value string) error {
 		store.tail = next
 	}
 	store.head = node
-	node.Prev = head
+	node.Next = head
 	return nil
 }
 

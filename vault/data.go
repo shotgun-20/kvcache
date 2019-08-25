@@ -22,8 +22,8 @@ type node struct {
 
 // Store - корневая структура для хранения данных
 type store struct {
-	exchange chan Message // Небуферизованный канал для синхронизации доступа
-	ttl      time.Time    // Время жизни узла
+	exchange chan Message  // Небуферизованный канал для синхронизации доступа
+	ttl      time.Duration // Время жизни узла
 	head     *node
 	tail     *node
 	flat     map[string]*node // Карта для быстрого доступа к значениям
