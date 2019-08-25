@@ -11,7 +11,7 @@ import (
 func main() {
 	router := new(web.Svc)
 	storage := new(vault.Store)
-	storage.Init(30)
+	storage.Init(10)
 	routing := []web.Route{
 		{URL: "/storage/{id}", Methods: []string{"GET"}, Handler: router.GetValue},
 		{URL: "/storage/{id}/{value}", Methods: []string{"PUT", "POST"}, Handler: router.SetValue},

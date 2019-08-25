@@ -27,6 +27,7 @@ func (store *Store) Init(ttl uint64) error {
 	return nil
 }
 
+// cleaner - уничтожаем устаревшие ключи
 func (store *Store) cleaner() {
 	reply := make(chan Message)
 	for {

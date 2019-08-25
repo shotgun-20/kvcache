@@ -1,6 +1,8 @@
 package vault
 
-import "errors"
+import (
+	"errors"
+)
 
 // addNode - добавляем новый узел в хвост очереди.
 func (store *Store) addNode(key, value string, kind bool) {
@@ -9,6 +11,9 @@ func (store *Store) addNode(key, value string, kind bool) {
 		prev = store.tail
 	}
 	store.tail = &node{Key: key, Value: value, Prev: prev, Kind: kind}
+	if store.head == nil {
+		store.head = store.tail
+	}
 	if prev != nil {
 		prev.Next = store.tail
 	}
@@ -25,26 +30,8 @@ func (store *Store) setNode(key, value string) error {
 		store.addNode(key, value, true)
 		return nil
 	}
-	// Вместо того, чтобы удалить и пересоздать, просто правим ссылки.
-	// Так будет эффективней, чем удалять и создавать объекты данных.
-	node := store.flat[key]
-	head := store.head
-	prev := node.Prev
-	next := node.Next
-	if prev != nil {
-		prev.Next = next
-	}
-	if next != nil {
-		next.Prev = prev
-	}
-	if store.head == node {
-		store.head = prev
-	}
-	if store.tail == node {
-		store.tail = next
-	}
-	store.head = node
-	node.Next = head
+	store.delNode(key)              // Сильно нерационально, удаление/создание объекта
+	store.addNode(key, value, true) // Зато резко упрощает код
 	return nil
 }
 
@@ -52,16 +39,21 @@ func (store *Store) setNode(key, value string) error {
 // Если Kind == 0 - то возвращаем ошибку.
 // При ошибке устаревание приостанавливается на секунду.
 func (store *Store) popNode() error {
+	var err error
 	if store.head == nil {
 		return errors.New("No nodes")
 	}
 	if store.head.Kind == false {
-		return errors.New("Decay timeout")
+		err = errors.New("Decay timeout")
 	}
-	key := store.head.Key
-	delete(store.flat, key)
-	store.head = store.head.Next
-	return nil
+	if store.head.Key != "" {
+		delete(store.flat, store.head.Key)
+	}
+	if store.head.Next != nil {
+		store.head = store.head.Next
+		store.head.Prev = nil
+	}
+	return err
 }
 
 // getNode - получить значение ключа, или ошибку, если такого нет.

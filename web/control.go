@@ -13,16 +13,33 @@ import (
 func (svc *Svc) GetValue(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
-	resp := fmt.Sprintf("Get ID: %s\n", id)
-	fmt.Fprint(w, resp)
+	reply := make(chan vault.Message)
+	msg := vault.Message{Action: "GET", Reply: reply, Key: id}
+	svc.exchange <- msg
+	resp := <-reply
+	if resp.Error != true {
+		fmt.Fprint(w, resp.Value)
+		return
+	}
+	w.WriteHeader(http.StatusBadRequest)
+	fmt.Fprint(w, "FAILURE")
 }
 
 // SetValue - установить/обновить значение ключа
 func (svc *Svc) SetValue(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
-	resp := fmt.Sprintf("Set ID: %s\n", id)
-	fmt.Fprint(w, resp)
+	v := vars["value"]
+	reply := make(chan vault.Message)
+	msg := vault.Message{Action: "SET", Reply: reply, Key: id, Value: v}
+	svc.exchange <- msg
+	resp := <-reply
+	if resp.Error != true {
+		fmt.Fprint(w, "OK")
+		return
+	}
+	w.WriteHeader(http.StatusBadRequest)
+	fmt.Fprint(w, "FAILURE")
 }
 
 // DelValue - удалить ключ из хранилища
@@ -44,7 +61,7 @@ func (svc *Svc) InitRouter(routes []Route, exch chan vault.Message) {
 			svc.router.HandleFunc(i.URL, i.Handler).Methods(j)
 		}
 	}
-	svc.Exchange = exch
+	svc.exchange = exch
 	return
 }
 
