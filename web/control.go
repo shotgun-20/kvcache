@@ -46,8 +46,16 @@ func (svc *Svc) SetValue(w http.ResponseWriter, r *http.Request) {
 func (svc *Svc) DelValue(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
-	resp := fmt.Sprintf("Delete ID: %s\n", id)
-	fmt.Fprint(w, resp)
+	reply := make(chan vault.Message)
+	msg := vault.Message{Action: "DEL", Reply: reply, Key: id}
+	svc.exchange <- msg
+	resp := <-reply
+	if resp.Error != true {
+		fmt.Fprint(w, "OK")
+		return
+	}
+	w.WriteHeader(http.StatusBadRequest)
+	fmt.Fprint(w, "FAILURE")
 }
 
 // InitRouter - инициализировать маршрутизацию запросов
