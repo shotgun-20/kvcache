@@ -18,10 +18,13 @@ func (store *Store) Init(ttl uint64) error {
 	store.Exchange = make(chan Message)
 	store.flat = make(map[string]*node)
 
+	// Создаём достаточное количество узлов-филлеров, чтобы механизм
+	// устаревания не начал уничтожать записи преждевременно.
 	var i uint64
 	for i = 0; i < ttl; i++ {
 		store.addNode("", "", false)
 	}
+
 	go store.control() // запускаем управление хранилищем
 	go store.cleaner() // запускаем устаревание записей
 	return nil
@@ -35,7 +38,6 @@ func (store *Store) cleaner() {
 		store.Exchange <- msg
 		got := <-reply
 		if got.Error == true {
-			//fmt.Print("Cleaner sleeps.\n")
 			time.Sleep(1 * time.Second)
 		}
 	}
@@ -47,10 +49,8 @@ func (store *Store) control() {
 	for {
 		select {
 		case <-tick:
-			//fmt.Print("Got time tick\n")
 			store.addNode("", "", false)
 		case request := <-store.Exchange:
-			//fmt.Print("Got request: ", request.Action, "\n")
 			reply := Message{}
 			switch request.Action {
 			case "POP": // внутренний метод, часть механизма устаревания. Недоступен клиентам.
