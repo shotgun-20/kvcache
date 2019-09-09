@@ -97,8 +97,7 @@ func main() {
 	flag.Parse()
 	listenStr := fmt.Sprintf("%s:%d", *hostF, *portF)
 	router := new(web.Svc)
-	storage := new(vault.Store)
-	storage.Init(*ttlF)
+	storage := vault.Store{30}
 	routing := []web.Route{
 		{URL: "/storage/{id}", Methods: []string{"GET"}, Handler: router.GetValue},
 		{URL: "/storage/{id}/{value}", Methods: []string{"PUT", "POST"}, Handler: router.SetValue},
