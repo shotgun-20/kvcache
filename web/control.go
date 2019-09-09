@@ -13,16 +13,13 @@ import (
 func (svc *Svc) GetValue(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
-	reply := make(chan vault.Message)
-	msg := vault.Message{Action: "GET", Reply: reply, Key: id}
-	svc.exchange <- msg
-	resp := <-reply
-	if resp.Error != true {
-		fmt.Fprint(w, resp.Value)
-		return
+	value, err := svc.store.GetValue(id)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprint(w, "FAILURE")
 	}
-	w.WriteHeader(http.StatusBadRequest)
-	fmt.Fprint(w, "FAILURE")
+	fmt.Fprint(w, value)
+	return
 }
 
 // SetValue - установить/обновить значение ключа
@@ -30,36 +27,31 @@ func (svc *Svc) SetValue(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
 	v := vars["value"]
-	reply := make(chan vault.Message)
-	msg := vault.Message{Action: "SET", Reply: reply, Key: id, Value: v}
-	svc.exchange <- msg
-	resp := <-reply
-	if resp.Error != true {
-		fmt.Fprint(w, "OK")
-		return
+	err := svc.store.SetValue(id, v)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprint(w, "FAILURE")
 	}
-	w.WriteHeader(http.StatusBadRequest)
-	fmt.Fprint(w, "FAILURE")
+	fmt.Fprint(w, "OK")
+	return
+
 }
 
 // DelValue - удалить ключ из хранилища
 func (svc *Svc) DelValue(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
-	reply := make(chan vault.Message)
-	msg := vault.Message{Action: "DEL", Reply: reply, Key: id}
-	svc.exchange <- msg
-	resp := <-reply
-	if resp.Error != true {
-		fmt.Fprint(w, "OK")
-		return
+	err := svc.store.DelValue(id)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprint(w, "FAILURE")
 	}
-	w.WriteHeader(http.StatusBadRequest)
-	fmt.Fprint(w, "FAILURE")
+	fmt.Fprint(w, "OK")
+	return
 }
 
 // InitRouter - инициализировать маршрутизацию запросов
-func (svc *Svc) InitRouter(routes []Route, exch chan vault.Message) {
+func (svc *Svc) InitRouter(routes []Route, store *vault.Store) {
 	if svc.router != nil {
 		return
 	}
@@ -69,7 +61,7 @@ func (svc *Svc) InitRouter(routes []Route, exch chan vault.Message) {
 			svc.router.HandleFunc(i.URL, i.Handler).Methods(j)
 		}
 	}
-	svc.exchange = exch
+	svc.store = store
 	return
 }
 

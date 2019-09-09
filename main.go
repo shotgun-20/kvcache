@@ -97,13 +97,13 @@ func main() {
 	flag.Parse()
 	listenStr := fmt.Sprintf("%s:%d", *hostF, *portF)
 	router := new(web.Svc)
-	storage := vault.Store{30}
+	storage := vault.Store{TTL: *ttlF}
 	routing := []web.Route{
 		{URL: "/storage/{id}", Methods: []string{"GET"}, Handler: router.GetValue},
 		{URL: "/storage/{id}/{value}", Methods: []string{"PUT", "POST"}, Handler: router.SetValue},
 		{URL: "/storage/{id}", Methods: []string{"DELETE"}, Handler: router.DelValue},
 	}
-	router.InitRouter(routing, storage.Exchange)
+	router.InitRouter(routing, &storage)
 	http.Handle("/", router.GetRouter())
 	fmt.Printf("Listening: %s\n", listenStr)
 	http.ListenAndServe(listenStr, nil)

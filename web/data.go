@@ -16,6 +16,6 @@ type Route struct {
 
 // Svc - обмен данными с хранилищем
 type Svc struct {
-	exchange chan vault.Message
-	router   *mux.Router
+	store  *vault.Store
+	router *mux.Router
 }
