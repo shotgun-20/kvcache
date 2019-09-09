@@ -4,19 +4,6 @@ import (
 	"time"
 )
 
-// cleaner - уничтожаем устаревшие ключи
-func (store *Store) cleaner() {
-	reply := make(chan Message)
-	for {
-		msg := Message{Action: "POP", Reply: reply}
-		store.exchange <- msg
-		got := <-reply
-		if got.Error == true {
-			time.Sleep(1 * time.Second)
-		}
-	}
-}
-
 // control - управление хранилищем
 func (store *Store) control() {
 	tick := time.Tick(time.Second) // Каждую секунду ставим в очередь разделитель "вёдер"
@@ -33,13 +20,6 @@ func (store *Store) control() {
 		case request := <-store.exchange:
 			reply := Message{}
 			switch request.Action {
-			/*
-				case "POP": // внутренний метод, часть механизма устаревания. Недоступен клиентам.
-					err := store.popNode()
-					if err != nil {
-						reply.Error = true
-					}
-			*/
 			case "SET":
 				err := store.setNode(request.Key, request.Value)
 				reply.Key = request.Key

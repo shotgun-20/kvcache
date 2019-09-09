@@ -25,9 +25,7 @@ func (store *Store) init() {
 	}
 
 	go store.control() // запускаем управление хранилищем
-	//go store.cleaner() // запускаем устаревание записей
 	store.isInit = true
-
 }
 
 // addNode - добавляем новый узел в хвост очереди.
