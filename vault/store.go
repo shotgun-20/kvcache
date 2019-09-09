@@ -16,6 +16,7 @@ func (store *Store) init() {
 	store.ttl = store.TTL
 	store.exchange = make(chan Message)
 	store.flat = make(map[string]*node)
+	store.isInit = true
 
 	// Создаём достаточное количество узлов-филлеров, чтобы механизм
 	// устаревания не начал уничтожать записи преждевременно.
@@ -25,14 +26,10 @@ func (store *Store) init() {
 	}
 
 	go store.control() // запускаем управление хранилищем
-	store.isInit = true
 }
 
 // addNode - добавляем новый узел в хвост очереди.
 func (store *Store) addNode(key, value string, kind bool) error {
-	if store.isInit == false {
-		store.init()
-	}
 	var prev *node
 	if store.tail != nil {
 		prev = store.tail
@@ -54,9 +51,6 @@ func (store *Store) addNode(key, value string, kind bool) error {
 // Если ключа ещё нет - просто добавляем в хвост.
 // Если ключ есть - переносим в хвост.
 func (store *Store) setNode(key, value string) error {
-	if store.isInit == false {
-		store.init()
-	}
 	if _, ok := store.flat[key]; ok == false {
 		store.addNode(key, value, true)
 		return nil
@@ -70,9 +64,6 @@ func (store *Store) setNode(key, value string) error {
 // Если Kind == 0 - то возвращаем ошибку.
 // При ошибке устаревание приостанавливается на секунду.
 func (store *Store) popNode() error {
-	if store.isInit == false {
-		store.init()
-	}
 	var err error
 	if store.head == nil {
 		return errors.New("No nodes")
@@ -92,9 +83,6 @@ func (store *Store) popNode() error {
 
 // getNode - получить значение ключа, или ошибку, если такого нет.
 func (store *Store) getNode(key string) (string, error) {
-	if store.isInit == false {
-		store.init()
-	}
 	if v, ok := store.flat[key]; ok != false {
 		return v.Value, nil
 	}
@@ -104,9 +92,6 @@ func (store *Store) getNode(key string) (string, error) {
 // delNode - удалить узел с указанным ключом.
 // Если такого ключа не было - вернуть ошибку.
 func (store *Store) delNode(key string) error {
-	if store.isInit == false {
-		store.init()
-	}
 	if _, ok := store.flat[key]; ok == false {
 		return errors.New("No such key")
 	}

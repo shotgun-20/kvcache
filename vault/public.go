@@ -8,6 +8,9 @@ import (
 
 // GetValue - получить значение ключа из хранилища
 func (store *Store) GetValue(key string) (string, error) {
+	if store.isInit == false {
+		store.init()
+	}
 	reply := make(chan Message)
 	msg := Message{Action: "GET", Reply: reply, Key: key}
 	store.exchange <- msg
@@ -20,6 +23,9 @@ func (store *Store) GetValue(key string) (string, error) {
 
 // SetValue - установить/обновить значение ключа
 func (store *Store) SetValue(key, value string) error {
+	if store.isInit == false {
+		store.init()
+	}
 	reply := make(chan Message)
 	msg := Message{Action: "SET", Reply: reply, Key: key, Value: value}
 	store.exchange <- msg
@@ -32,6 +38,9 @@ func (store *Store) SetValue(key, value string) error {
 
 // DelValue - удалить ключ из хранилища
 func (store *Store) DelValue(key string) error {
+	if store.isInit == false {
+		store.init()
+	}
 	reply := make(chan Message)
 	msg := Message{Action: "DEL", Reply: reply, Key: key}
 	store.exchange <- msg
