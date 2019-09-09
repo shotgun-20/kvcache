@@ -17,7 +17,10 @@ func (store *Store) control() {
 					break
 				}
 			}
-		case request := <-store.exchange:
+		case request, ok := <-store.exchange:
+			if !ok {
+				break
+			}
 			reply := Message{}
 			switch request.Action {
 			case "SET":
