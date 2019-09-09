@@ -6,7 +6,8 @@ import (
 
 // control - управление хранилищем
 func (store *Store) control() {
-	tick := time.Tick(time.Second) // Каждую секунду ставим в очередь разделитель "вёдер"
+	tick := time.Tick(time.Second) // Каждую секунду
+	// ставим в очередь разделитель "вёдер" и убираем устаревшее
 	for {
 		select {
 		case <-tick:
