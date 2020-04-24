@@ -12,7 +12,7 @@ type Message struct {
 
 // node - узел данных для очереди устаревания
 type node struct {
-	Kind  bool        // 0 - таймаут, 1 - данные
+	kind  bool        // 0 - таймаут, 1 - данные
 	Key   string      // Ключ
 	Value interface{} // Хранимое значение
 	Prev  *node       // Ближе к голове, извлекается раньше

@@ -34,7 +34,7 @@ func (store *Store) addNode(key string, value interface{}, kind bool) error {
 	if store.tail != nil {
 		prev = store.tail
 	}
-	store.tail = &node{Key: key, Value: value, Prev: prev, Kind: kind}
+	store.tail = &node{Key: key, Value: value, Prev: prev, kind: kind}
 	if store.head == nil {
 		store.head = store.tail
 	}
@@ -68,7 +68,7 @@ func (store *Store) popNode() error {
 	if store.head == nil {
 		return errors.New("No nodes")
 	}
-	if store.head.Kind == false {
+	if store.head.kind == false {
 		err = errors.New("Decay timeout")
 	}
 	if store.head.Key != "" {
