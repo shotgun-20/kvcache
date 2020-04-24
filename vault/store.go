@@ -29,7 +29,7 @@ func (store *Store) init() {
 }
 
 // addNode - добавляем новый узел в хвост очереди.
-func (store *Store) addNode(key, value string, kind bool) error {
+func (store *Store) addNode(key string, value interface{}, kind bool) error {
 	var prev *node
 	if store.tail != nil {
 		prev = store.tail
@@ -50,7 +50,7 @@ func (store *Store) addNode(key, value string, kind bool) error {
 // setNode - собираемся добавить новый узел.
 // Если ключа ещё нет - просто добавляем в хвост.
 // Если ключ есть - переносим в хвост.
-func (store *Store) setNode(key, value string) error {
+func (store *Store) setNode(key string, value interface{}) error {
 	if _, ok := store.flat[key]; ok == false {
 		store.addNode(key, value, true)
 		return nil
@@ -82,7 +82,7 @@ func (store *Store) popNode() error {
 }
 
 // getNode - получить значение ключа, или ошибку, если такого нет.
-func (store *Store) getNode(key string) (string, error) {
+func (store *Store) getNode(key string) (interface{}, error) {
 	if v, ok := store.flat[key]; ok != false {
 		return v.Value, nil
 	}

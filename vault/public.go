@@ -7,7 +7,7 @@ import (
 )
 
 // GetValue - получить значение ключа из хранилища
-func (store *Store) GetValue(key string) (string, error) {
+func (store *Store) GetValue(key string) (interface{}, error) {
 	if store.isInit == false {
 		store.init()
 	}
@@ -22,7 +22,7 @@ func (store *Store) GetValue(key string) (string, error) {
 }
 
 // SetValue - установить/обновить значение ключа
-func (store *Store) SetValue(key, value string) error {
+func (store *Store) SetValue(key string, value interface{}) error {
 	if store.isInit == false {
 		store.init()
 	}

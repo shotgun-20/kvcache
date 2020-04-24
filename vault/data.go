@@ -4,7 +4,7 @@ package vault
 // запрос/ответ
 type Message struct {
 	Key    string
-	Value  string
+	Value  interface{}
 	Action string // SET, GET, DEL, POP
 	Error  bool
 	Reply  chan Message
@@ -12,11 +12,11 @@ type Message struct {
 
 // node - узел данных для очереди устаревания
 type node struct {
-	Kind  bool   // 0 - таймаут, 1 - данные
-	Key   string // Ключ
-	Value string // Хранимое значение
-	Prev  *node  // Ближе к голове, извлекается раньше
-	Next  *node  // Ближе к хвосту, выйдёт позже
+	Kind  bool        // 0 - таймаут, 1 - данные
+	Key   string      // Ключ
+	Value interface{} // Хранимое значение
+	Prev  *node       // Ближе к голове, извлекается раньше
+	Next  *node       // Ближе к хвосту, выйдёт позже
 }
 
 // Store - корневая структура для хранения данных
