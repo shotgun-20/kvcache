@@ -1,4 +1,4 @@
-## Expiring key-value storage
+# Expiring key-value storage
 
 Кеш "ключ-значение" с механизмом устаревания записей.
 
