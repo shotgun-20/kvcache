@@ -2,11 +2,12 @@ package vault
 
 import (
 	"errors"
+	"time"
 )
 
 // init - инициализация хранилища с заданным TTL
 func (store *Store) init() {
-	if store.isInit == true {
+	if store.ttl != 0 {
 		return
 	}
 	if store.TTL < 1 {
@@ -16,7 +17,6 @@ func (store *Store) init() {
 	store.ttl = store.TTL
 	store.exchange = make(chan Message)
 	store.flat = make(map[string]*node)
-	store.isInit = true
 
 	// Создаём достаточное количество узлов-филлеров, чтобы механизм
 	// устаревания не начал уничтожать записи преждевременно.
@@ -29,21 +29,19 @@ func (store *Store) init() {
 }
 
 // addNode - добавляем новый узел в хвост очереди.
-func (store *Store) addNode(key string, value interface{}, kind bool) error {
+func (store *Store) addNode(key string, value interface{}, expire time.Time) error {
 	var prev *node
 	if store.tail != nil {
 		prev = store.tail
 	}
-	store.tail = &node{Key: key, Value: value, Prev: prev, kind: kind}
+	store.tail = &node{Key: key, Value: value, Prev: prev, expire: expire}
 	if store.head == nil {
 		store.head = store.tail
 	}
 	if prev != nil {
 		prev.Next = store.tail
 	}
-	if kind == true {
-		store.flat[key] = store.tail
-	}
+
 	return nil
 }
 

@@ -8,7 +8,7 @@ import (
 
 // GetValue - получить значение ключа из хранилища
 func (store *Store) GetValue(key string) (interface{}, error) {
-	if store.isInit == false {
+	if store.ttl == 0 {
 		store.init()
 	}
 	reply := make(chan Message)
@@ -23,7 +23,7 @@ func (store *Store) GetValue(key string) (interface{}, error) {
 
 // SetValue - установить/обновить значение ключа
 func (store *Store) SetValue(key string, value interface{}) error {
-	if store.isInit == false {
+	if store.ttl == 0 {
 		store.init()
 	}
 	reply := make(chan Message)
@@ -38,7 +38,7 @@ func (store *Store) SetValue(key string, value interface{}) error {
 
 // DelValue - удалить ключ из хранилища
 func (store *Store) DelValue(key string) error {
-	if store.isInit == false {
+	if store.ttl == 0 {
 		store.init()
 	}
 	reply := make(chan Message)
