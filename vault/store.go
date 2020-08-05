@@ -18,13 +18,6 @@ func (store *Store) init() {
 	store.exchange = make(chan Message)
 	store.flat = make(map[string]*node)
 
-	// Создаём достаточное количество узлов-филлеров, чтобы механизм
-	// устаревания не начал уничтожать записи преждевременно.
-	var i uint64
-	for i = 0; i < store.ttl; i++ {
-		store.addNode("", "", false)
-	}
-
 	go store.control() // запускаем управление хранилищем
 }
 
@@ -49,12 +42,13 @@ func (store *Store) addNode(key string, value interface{}, expire time.Time) err
 // Если ключа ещё нет - просто добавляем в хвост.
 // Если ключ есть - переносим в хвост.
 func (store *Store) setNode(key string, value interface{}) error {
+	now := time.Now()
 	if _, ok := store.flat[key]; ok == false {
-		store.addNode(key, value, true)
+		store.addNode(key, value, now.Add(time.Second*(time.Duration)(store.ttl)))
 		return nil
 	}
-	store.delNode(key)              // Сильно нерационально, удаление/создание объекта
-	store.addNode(key, value, true) // Зато резко упрощает код
+	store.delNode(key)                                                         // Сильно нерационально, удаление/создание объекта
+	store.addNode(key, value, now.Add(time.Second*(time.Duration)(store.ttl))) // Зато резко упрощает код
 	return nil
 }
 
@@ -65,9 +59,6 @@ func (store *Store) popNode() error {
 	var err error
 	if store.head == nil {
 		return errors.New("No nodes")
-	}
-	if store.head.kind == false {
-		err = errors.New("Decay timeout")
 	}
 	if store.head.Key != "" {
 		delete(store.flat, store.head.Key)
