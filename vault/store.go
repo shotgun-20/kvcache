@@ -14,7 +14,7 @@ func (store *Store) init() {
 		store.TTL = 30
 	}
 
-	store.ttl = store.TTL
+	store.ttl = time.Second * (time.Duration)(store.TTL)
 	store.exchange = make(chan Message)
 	store.flat = make(map[string]*node)
 
@@ -34,6 +34,7 @@ func (store *Store) addNode(key string, value interface{}, expire time.Time) err
 	if prev != nil {
 		prev.Next = store.tail
 	}
+	store.flat[key] = store.tail
 
 	return nil
 }
@@ -44,11 +45,11 @@ func (store *Store) addNode(key string, value interface{}, expire time.Time) err
 func (store *Store) setNode(key string, value interface{}) error {
 	now := time.Now()
 	if _, ok := store.flat[key]; ok == false {
-		store.addNode(key, value, now.Add(time.Second*(time.Duration)(store.ttl)))
+		store.addNode(key, value, now.Add(store.ttl))
 		return nil
 	}
-	store.delNode(key)                                                         // Сильно нерационально, удаление/создание объекта
-	store.addNode(key, value, now.Add(time.Second*(time.Duration)(store.ttl))) // Зато резко упрощает код
+	store.delNode(key)                            // Сильно нерационально, удаление/создание объекта
+	store.addNode(key, value, now.Add(store.ttl)) // Зато резко упрощает код
 	return nil
 }
 
@@ -61,11 +62,16 @@ func (store *Store) popNode() error {
 		return errors.New("No nodes")
 	}
 	if store.head.Key != "" {
-		delete(store.flat, store.head.Key)
+		if _, ok := store.flat[store.head.Key]; ok == true {
+			delete(store.flat, store.head.Key)
+		}
 	}
 	if store.head.Next != nil {
 		store.head = store.head.Next
 		store.head.Prev = nil
+	} else {
+		store.head = nil
+		store.tail = nil
 	}
 	return err
 }
