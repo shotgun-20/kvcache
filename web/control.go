@@ -17,9 +17,9 @@ func (svc *Svc) GetValue(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprint(w, "FAILURE")
+		return
 	}
 	fmt.Fprint(w, value)
-	return
 }
 
 // SetValue - установить/обновить значение ключа
@@ -31,10 +31,9 @@ func (svc *Svc) SetValue(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprint(w, "FAILURE")
+		return
 	}
 	fmt.Fprint(w, "OK")
-	return
-
 }
 
 // DelValue - удалить ключ из хранилища
@@ -45,9 +44,9 @@ func (svc *Svc) DelValue(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprint(w, "FAILURE")
+		return
 	}
 	fmt.Fprint(w, "OK")
-	return
 }
 
 // InitRouter - инициализировать маршрутизацию запросов
